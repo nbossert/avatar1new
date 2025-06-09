@@ -2,41 +2,133 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Simple Golf Scorecard</title>
+  <title>Roll'em Extreme</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     table { border-collapse: collapse; margin-bottom: 10px; }
     th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: center; }
-    button { padding: 6px 12px; }
+    input[type=number] { width: 60px; }
+    button { padding: 6px 12px; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <h1>Golf Scoring Game</h1>
-  <table>
-    <tr><th>Hole</th><th>Strokes</th></tr>
-    <tr><td>1</td><td><input type="number" id="hole1" min="1" value="" /></td></tr>
-    <tr><td>2</td><td><input type="number" id="hole2" min="1" value="" /></td></tr>
-    <tr><td>3</td><td><input type="number" id="hole3" min="1" value="" /></td></tr>
-    <tr><td>4</td><td><input type="number" id="hole4" min="1" value="" /></td></tr>
-    <tr><td>5</td><td><input type="number" id="hole5" min="1" value="" /></td></tr>
-    <tr><td>6</td><td><input type="number" id="hole6" min="1" value="" /></td></tr>
-    <tr><td>7</td><td><input type="number" id="hole7" min="1" value="" /></td></tr>
-    <tr><td>8</td><td><input type="number" id="hole8" min="1" value="" /></td></tr>
-    <tr><td>9</td><td><input type="number" id="hole9" min="1" value="" /></td></tr>
-  </table>
-  <button id="calcButton">Calculate Total</button>
-  <p id="total"></p>
-  <script>
-    document.getElementById('calcButton').addEventListener('click', function() {
-      let total = 0;
-      for (let i = 1; i <= 9; i++) {
-        const value = parseInt(document.getElementById('hole' + i).value);
-        if (!isNaN(value)) {
-          total += value;
-        }
-      }
-      document.getElementById('total').textContent = 'Total strokes: ' + total;
+  <h1>Roll'em Extreme</h1>
+  <div id="setup">
+    <label>Player names (comma separated):
+      <input id="playerNames" placeholder="Alice,Bob" />
+    </label>
+    <button id="start">Start Game</button>
+  </div>
+
+  <div id="game" style="display:none;">
+    <h2 id="holeHeader"></h2>
+    <label>Par: <input id="par" type="number" min="3" max="6" value="4"></label>
+    <label>Bet per Dot: <input id="bet" type="number" min="1" value="10"></label>
+    <table id="scoreTable"></table>
+    <button id="submitHole">Submit Hole</button>
+  </div>
+
+  <div id="results" style="display:none;">
+    <h2>Final Results</h2>
+    <div id="final"></div>
+  </div>
+
+<script>
+const DOTS = ['S','B','E','P','Y'];
+let players = [];
+let hole = 1;
+
+function startGame() {
+  const names = document.getElementById('playerNames').value.split(',').map(n => n.trim()).filter(n => n);
+  if (names.length < 2) {
+    alert('Enter at least two player names separated by commas.');
+    return;
+  }
+  players = names.map(name => ({name, money:0, dots:{S:0,B:0,E:0,P:0,Y:0}}));
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('game').style.display = '';
+  renderHole();
+}
+
+document.getElementById('start').addEventListener('click', startGame);
+
+document.getElementById('submitHole').addEventListener('click', () => {
+  const par = parseInt(document.getElementById('par').value);
+  const bet = parseInt(document.getElementById('bet').value);
+  const strokes = [];
+  players.forEach((p, idx) => {
+    const s = parseInt(document.getElementById('stroke_'+idx).value);
+    strokes.push(isNaN(s) ? null : s);
+  });
+  if (strokes.some(s => s === null)) {
+    alert('Enter strokes for all players');
+    return;
+  }
+  // determine low score
+  const minStroke = Math.min(...strokes);
+  const lowIndexes = strokes.reduce((arr, s, i) => (s === minStroke ? arr.concat(i) : arr), []);
+  if (lowIndexes.length === 1) {
+    const i = lowIndexes[0];
+    awardDot(i, 'S', bet);
+  }
+  // birdies and eagles
+  strokes.forEach((s, i) => {
+    if (s <= par - 2) awardDot(i, 'E', bet);
+    else if (s === par - 1) awardDot(i, 'B', bet);
+  });
+  // check manual dots
+  players.forEach((p, idx) => {
+    ['P','Y'].forEach(d => {
+      const cb = document.getElementById(d+'_'+idx);
+      if (cb.checked) awardDot(idx, d, bet);
     });
-  </script>
+  });
+
+  hole++;
+  if (hole > 18) {
+    showResults();
+  } else {
+    renderHole();
+  }
+});
+
+function awardDot(playerIdx, type, bet) {
+  players[playerIdx].dots[type]++;
+  players[playerIdx].money += bet * (players.length - 1);
+  players.forEach((p, idx) => {
+    if (idx !== playerIdx) p.money -= bet;
+  });
+}
+
+function renderHole() {
+  document.getElementById('holeHeader').textContent = 'Hole ' + hole;
+  const table = document.getElementById('scoreTable');
+  table.innerHTML = '';
+  const header = document.createElement('tr');
+  header.innerHTML = '<th>Player</th><th>Strokes</th><th>Poley (P)</th><th>Sandy (Y)</th>';
+  table.appendChild(header);
+  players.forEach((p, idx) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${p.name}</td>` +
+      `<td><input type="number" id="stroke_${idx}" min="1"></td>` +
+      `<td><input type="checkbox" id="P_${idx}"></td>` +
+      `<td><input type="checkbox" id="Y_${idx}"></td>`;
+    table.appendChild(row);
+  });
+}
+
+function showResults() {
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('results').style.display = '';
+  const div = document.getElementById('final');
+  div.innerHTML = '';
+  players.forEach(p => {
+    const dlist = DOTS.map(d => `${d}:${p.dots[d]}`).join(' ');
+    const pEl = document.createElement('p');
+    pEl.textContent = `${p.name} - $${p.money} (${dlist})`;
+    div.appendChild(pEl);
+  });
+}
+</script>
 </body>
 </html>
