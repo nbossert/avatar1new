@@ -1,15 +1,8 @@
-﻿import Link from "next/link";
+﻿import { useEffect } from "react";
+import { useRouter } from "next/router";
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6
-                     bg-gradient-to-b from-green-600 to-blue-800 text-white">
-      <h1 className="text-4xl font-bold">Avatar G Poker</h1>
-      <p className="text-lg">Golf side-bet tracker</p>
-      <Link href="/game"
-            className="rounded bg-yellow-300 px-6 py-3 font-bold text-black shadow-lg">
-        Play&nbsp;Now
-      </Link>
-    </main>
-  );
+  const router = useRouter();
+  useEffect(() => router.replace("/game"), [router]);
+  return null;        // no UI, just the redirect
 }
