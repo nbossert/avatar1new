@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@keyframes reel {
+  from { transform: translateY(0%); }
+  to { transform: translateY(-100%); }
+}
+
+.animate-reel {
+  animation: reel 1s linear infinite;
+}
