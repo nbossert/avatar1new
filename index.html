@@ -59,6 +59,12 @@
     #game h2 {
       margin-top: 0;
     }
+    #playerNamesRow {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 <body>
@@ -73,6 +79,7 @@
 
   <div id="game" style="display:none;">
     <h2 id="holeHeader"></h2>
+    <div id="playerNamesRow"></div>
     <label>Par: <input id="par" type="number" min="3" max="6" value="4"></label>
     <label>Bet per Dot: <input id="bet" type="number" min="1" value="10"></label>
     <table id="scoreTable"></table>
@@ -153,6 +160,12 @@ function awardDot(playerIdx, type, bet) {
 
 function renderHole() {
   document.getElementById('holeHeader').textContent = 'Hole ' + hole;
+  const namesRow = document.getElementById('playerNamesRow');
+  if (players.length >= 2) {
+    namesRow.innerHTML = `<span>${players[0].name}</span><span>${players[1].name}</span>`;
+  } else {
+    namesRow.textContent = players.map(p => p.name).join(' vs ');
+  }
   const table = document.getElementById('scoreTable');
   table.innerHTML = '';
   const header = document.createElement('tr');
