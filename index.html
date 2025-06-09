@@ -2,23 +2,198 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Red Button Example</title>
+  <title>Roll'em Extreme</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f4f4;
+      padding: 30px;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-top: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    th {
+      background: #f0f0f0;
+    }
+    input[type=number] {
+      width: 60px;
+    }
     button {
-      background-color: red;
-      color: white;
-      padding: 10px 20px;
+      padding: 8px 14px;
+      margin-top: 10px;
+      background-color: #007bff;
+      color: #fff;
       border: none;
+      border-radius: 4px;
       cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #setup {
+      text-align: center;
+    }
+    #game h2 {
+      margin-top: 0;
+    }
+    #playerNamesRow {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      margin-bottom: 8px;
     }
   </style>
 </head>
 <body>
-  <button id='helloButton'>Click me</button>
-  <script>
-    document.getElementById('helloButton').addEventListener('click', function () {
-      alert('hi');
+  <div class="container">
+  <h1>Roll'em Extreme</h1>
+  <div id="setup">
+    <label>Player names (comma separated):
+      <input id="playerNames" placeholder="Alice,Bob" />
+    </label>
+    <button id="start">Start Game</button>
+  </div>
+
+  <div id="game" style="display:none;">
+    <h2 id="holeHeader"></h2>
+    <div id="playerNamesRow"></div>
+    <label>Par: <input id="par" type="number" min="3" max="6" value="4"></label>
+    <label>Bet per Dot: <input id="bet" type="number" min="1" value="10"></label>
+    <table id="scoreTable"></table>
+    <button id="submitHole">Submit Hole</button>
+  </div>
+
+  <div id="results" style="display:none;">
+    <h2>Final Results</h2>
+    <div id="final"></div>
+  </div>
+
+<script>
+const DOTS = ['S','B','E','P','Y'];
+let players = [];
+let hole = 1;
+
+function startGame() {
+  const names = document.getElementById('playerNames').value.split(',').map(n => n.trim()).filter(n => n);
+  if (names.length < 2) {
+    alert('Enter at least two player names separated by commas.');
+    return;
+  }
+  players = names.map(name => ({name, money:0, dots:{S:0,B:0,E:0,P:0,Y:0}}));
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('game').style.display = '';
+  renderHole();
+}
+
+document.getElementById('start').addEventListener('click', startGame);
+
+document.getElementById('submitHole').addEventListener('click', () => {
+  const par = parseInt(document.getElementById('par').value);
+  const bet = parseInt(document.getElementById('bet').value);
+  const strokes = [];
+  players.forEach((p, idx) => {
+    const s = parseInt(document.getElementById('stroke_'+idx).value);
+    strokes.push(isNaN(s) ? null : s);
+  });
+  if (strokes.some(s => s === null)) {
+    alert('Enter strokes for all players');
+    return;
+  }
+  // determine low score
+  const minStroke = Math.min(...strokes);
+  const lowIndexes = strokes.reduce((arr, s, i) => (s === minStroke ? arr.concat(i) : arr), []);
+  if (lowIndexes.length === 1) {
+    const i = lowIndexes[0];
+    awardDot(i, 'S', bet);
+  }
+  // birdies and eagles
+  strokes.forEach((s, i) => {
+    if (s <= par - 2) awardDot(i, 'E', bet);
+    else if (s === par - 1) awardDot(i, 'B', bet);
+  });
+  // check manual dots
+  players.forEach((p, idx) => {
+    ['P','Y'].forEach(d => {
+      const cb = document.getElementById(d+'_'+idx);
+      if (cb.checked) awardDot(idx, d, bet);
     });
-  </script>
+  });
+
+  hole++;
+  if (hole > 18) {
+    showResults();
+  } else {
+    renderHole();
+  }
+});
+
+function awardDot(playerIdx, type, bet) {
+  players[playerIdx].dots[type]++;
+  players[playerIdx].money += bet * (players.length - 1);
+  players.forEach((p, idx) => {
+    if (idx !== playerIdx) p.money -= bet;
+  });
+}
+
+function renderHole() {
+  document.getElementById('holeHeader').textContent = 'Hole ' + hole;
+  const namesRow = document.getElementById('playerNamesRow');
+  if (players.length >= 2) {
+    namesRow.innerHTML = `<span>${players[0].name}</span><span>${players[1].name}</span>`;
+  } else {
+    namesRow.textContent = players.map(p => p.name).join(' vs ');
+  }
+  const table = document.getElementById('scoreTable');
+  table.innerHTML = '';
+  const header = document.createElement('tr');
+  header.innerHTML = '<th>Player</th><th>Strokes</th><th>Poley (P)</th><th>Sandy (Y)</th>';
+  table.appendChild(header);
+  players.forEach((p, idx) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${p.name}</td>` +
+      `<td><input type="number" id="stroke_${idx}" min="1"></td>` +
+      `<td><input type="checkbox" id="P_${idx}"></td>` +
+      `<td><input type="checkbox" id="Y_${idx}"></td>`;
+    table.appendChild(row);
+  });
+}
+
+function showResults() {
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('results').style.display = '';
+  const div = document.getElementById('final');
+  div.innerHTML = '';
+  players.forEach(p => {
+    const dlist = DOTS.map(d => `${d}:${p.dots[d]}`).join(' ');
+    const pEl = document.createElement('p');
+    pEl.textContent = `${p.name} - $${p.money} (${dlist})`;
+    div.appendChild(pEl);
+  });
+}
+</script>
+  </div>
 </body>
 </html>
