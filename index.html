@@ -1,26 +1,42 @@
-@"
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Red Button Example</title>
+  <title>Simple Golf Scorecard</title>
   <style>
-    button {
-      background-color: red;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      cursor: pointer;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { border-collapse: collapse; margin-bottom: 10px; }
+    th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: center; }
+    button { padding: 6px 12px; }
   </style>
 </head>
 <body>
-  <button id='helloButton'>Click me</button>
+  <h1>Golf Scoring Game</h1>
+  <table>
+    <tr><th>Hole</th><th>Strokes</th></tr>
+    <tr><td>1</td><td><input type="number" id="hole1" min="1" value="" /></td></tr>
+    <tr><td>2</td><td><input type="number" id="hole2" min="1" value="" /></td></tr>
+    <tr><td>3</td><td><input type="number" id="hole3" min="1" value="" /></td></tr>
+    <tr><td>4</td><td><input type="number" id="hole4" min="1" value="" /></td></tr>
+    <tr><td>5</td><td><input type="number" id="hole5" min="1" value="" /></td></tr>
+    <tr><td>6</td><td><input type="number" id="hole6" min="1" value="" /></td></tr>
+    <tr><td>7</td><td><input type="number" id="hole7" min="1" value="" /></td></tr>
+    <tr><td>8</td><td><input type="number" id="hole8" min="1" value="" /></td></tr>
+    <tr><td>9</td><td><input type="number" id="hole9" min="1" value="" /></td></tr>
+  </table>
+  <button id="calcButton">Calculate Total</button>
+  <p id="total"></p>
   <script>
-    document.getElementById('helloButton').addEventListener('click', function () {
-      alert('hi');
+    document.getElementById('calcButton').addEventListener('click', function() {
+      let total = 0;
+      for (let i = 1; i <= 9; i++) {
+        const value = parseInt(document.getElementById('hole' + i).value);
+        if (!isNaN(value)) {
+          total += value;
+        }
+      }
+      document.getElementById('total').textContent = 'Total strokes: ' + total;
     });
   </script>
 </body>
 </html>
-"@ | Out-File -Encoding UTF8 red-button.html
