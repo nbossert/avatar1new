@@ -1,0 +1,26 @@
+@"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Red Button Example</title>
+  <style>
+    button {
+      background-color: red;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button id='helloButton'>Click me</button>
+  <script>
+    document.getElementById('helloButton').addEventListener('click', function () {
+      alert('hi');
+    });
+  </script>
+</body>
+</html>
+"@ | Out-File -Encoding UTF8 red-button.html
