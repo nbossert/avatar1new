@@ -3,15 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <title>Roll'em Extreme</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    table { border-collapse: collapse; margin-bottom: 10px; }
-    th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: center; }
-    input[type=number] { width: 60px; }
-    button { padding: 6px 12px; margin-top: 10px; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f4f4;
+      padding: 30px;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-top: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    th {
+      background: #f0f0f0;
+    }
+    input[type=number] {
+      width: 60px;
+    }
+    button {
+      padding: 8px 14px;
+      margin-top: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #setup {
+      text-align: center;
+    }
+    #game h2 {
+      margin-top: 0;
+    }
   </style>
 </head>
 <body>
+  <div class="container">
   <h1>Roll'em Extreme</h1>
   <div id="setup">
     <label>Player names (comma separated):
@@ -130,5 +181,6 @@ function showResults() {
   });
 }
 </script>
+  </div>
 </body>
 </html>
